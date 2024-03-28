@@ -24,5 +24,5 @@ def metrics():
 
 @app.get("/")
 async def home():
-    return RedirectResponse(url="/docs")
+    return {"data": "Hello"}
 
