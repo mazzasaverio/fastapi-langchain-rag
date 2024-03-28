@@ -72,6 +72,7 @@ module "secret_manager" {
   db_port        = var.db_port
   github_token   = var.github_token
   openai_api_key = var.openai_api_key
+  depends_on     = [data.google_service_account.existing_service_account]
 }
 
 
