@@ -1,0 +1,26 @@
+aiopg==1.4.0
+alembic==1.13.1
+asyncpg==0.29.0
+brotli==1.1.0
+chardet==5.2.0
+email-validator==2.1.0.post1
+exceptiongroup==1.2.0
+fastapi==0.109.2
+gmpy2==2.1.5
+httpx==0.26.0
+importlib-metadata==7.0.1
+loguru==0.7.2
+pandas==2.2.0
+passlib==1.7.4
+pgvector==0.2.5
+pickleshare==0.7.5
+pydantic-settings==2.2.0
+pysocks==1.7.1
+requests
+tqdm
+# pytest==8.0.1
+python-jose==3.3.0
+python-multipart==0.0.9
+sentence-transformers==2.3.1
+torchvision==0.17.0
+uvicorn==0.27.1
