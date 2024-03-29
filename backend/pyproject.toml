@@ -17,6 +17,8 @@ asyncpg = "^0.29.0"
 sqlmodel = "^0.0.16"
 pyyaml = "^6.0.1"
 langchain = "^0.1.13"
+langchain-openai = "^0.1.1"
+pymupdf = "^1.24.0"
 
 
 [build-system]

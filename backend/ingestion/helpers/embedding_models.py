@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-# mypy: disable-error-code="call-arg"
-# TODO: Change langchain param names to match the new langchain version
-
-import logging
 from typing import List, Optional, Union
 
 from langchain.embeddings import CacheBackedEmbeddings
-from langchain_openai.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
+from backend.logging_config import logger
+
 
 class CacheBackedEmbeddingsExtended(CacheBackedEmbeddings):
     def embed_query(self, text: str) -> List[float]:
@@ -21,7 +18,9 @@ class CacheBackedEmbeddingsExtended(CacheBackedEmbeddings):
         Returns:
             The embedding for the given text.
         """
-        vectors: List[Union[List[float], None]] = self.document_embedding_store.mget([text])
+        vectors: List[Union[List[float], None]] = self.document_embedding_store.mget(
+            [text]
+        )
         text_embeddings = vectors[0]
 
         if text_embeddings is None:
@@ -31,16 +30,19 @@ class CacheBackedEmbeddingsExtended(CacheBackedEmbeddings):
         return text_embeddings
 
 
-def get_embedding_model(emb_model: Optional[str]) -> CacheBackedEmbeddings:
+def get_embedding_model() -> CacheBackedEmbeddings:
     """
     Get the embedding model from the embedding model type.
     """
+
     underlying_embeddings = OpenAIEmbeddings()
 
-    embedder = CacheBackedEmbeddingsExtended(underlying_embeddings)
+    # embedder = CacheBackedEmbeddingsExtended(underlying_embeddings)
+
+    logger.info(f"Loaded embedding model: {underlying_embeddings.model}")
 
     # store = get_redis_store()
     # embedder = CacheBackedEmbeddingsExtended.from_bytes_store(
     #     underlying_embeddings, store, namespace=underlying_embeddings.model
     # )
-    return embedder
+    return underlying_embeddings

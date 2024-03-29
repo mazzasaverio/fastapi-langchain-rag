@@ -8,6 +8,8 @@ note_varie
 custom_tree_and_files_corrected.txt
 chapter-journal
 docs/chapter-journal
+
+*.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
