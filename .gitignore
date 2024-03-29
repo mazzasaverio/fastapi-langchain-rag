@@ -3,7 +3,7 @@
 frontend/*
 db_docker
 *.tfvars*
-
+*terraform.tfstate*
 note_varie
 custom_tree_and_files_corrected.txt
 chapter-journal

@@ -1,6 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 from typing import List
-from loguru import logger
+from backend.logging_config import logger
+
 import sys
 
 

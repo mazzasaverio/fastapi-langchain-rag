@@ -15,6 +15,8 @@ loguru = "^0.7.2"
 pydantic-settings = "^2.2.1"
 asyncpg = "^0.29.0"
 sqlmodel = "^0.0.16"
+pyyaml = "^6.0.1"
+langchain = "^0.1.13"
 
 
 [build-system]
