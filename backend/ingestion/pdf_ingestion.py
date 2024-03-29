@@ -18,12 +18,13 @@ from schemas.ingestion_schema import LOADER_DICT
 from fastapi.encoders import jsonable_encoder
 
 from helpers.embedding_models import get_embedding_model
-
+from langchain.text_splitter import TokenTextSplitter
 
 load_dotenv()
 
+
 ingestion_config = yaml.load(
-    open("backend/ingestion/config.yaml"), Loader=yaml.FullLoader
+    open(os.path.join(os.path.dirname(__file__), "config.yaml")), Loader=yaml.FullLoader
 )
 
 path_input_folder = ingestion_config.get("PATH_RAW_PDF", None)
@@ -33,6 +34,8 @@ path_extraction_folder = ingestion_config.get("PATH_EXTRACTION", None)
 
 pdf_parser = ingestion_config.get("PDF_PARSER", None)
 
+chunk_size = ingestion_config.get("TOKENIZER_CHUNK_SIZE", None)
+chunk_overlap = ingestion_config.get("TOKENIZER_CHUNK_OVERLAP", None)
 
 db_name = os.getenv("DB_NAME")
 
@@ -79,29 +82,37 @@ class PDFExtractionPipeline:
     ) -> PGVector:
         """Load documents into vectorstore."""
         text_documents = self._load_docs(folder_path)
-        # text_splitter = TokenTextSplitter(
-        #     chunk_size=self.pipeline_config.tokenizer_chunk_size,
-        #     chunk_overlap=self.pipeline_config.tokenizer_chunk_overlap,
-        # )
-        # texts = text_splitter.split_documents(text_documents)
 
-        # # Add metadata for separate filtering
-        # for text in texts:
-        #     text.metadata["type"] = "Text"
+        logger.info(f"Loading {text_documents} text-documents into vectorstore")
+        text_splitter = TokenTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
 
-        # docs = [*texts]
+        texts = text_splitter.split_documents(text_documents)
 
-        # logger.info(f"Loading {len(texts)} text-documents into vectorstore")
-        # return PGVector.from_documents(
-        #     embedding=self.embedding,
-        #     documents=docs,
-        #     collection_name=collection_name,
-        #     connection_string=self.connection_str,
-        #     pre_delete_collection=True,
-        # )
-        logger.info(f"Loading {len(text_documents)} text-documents into vectorstore")
+        json_path = os.path.join(
+            path_extraction_folder, f"{collection_name}_split_texts.json"
+        )
+        with open(json_path, "w") as json_file:
+            # Use jsonable_encoder to ensure the data is serializable
+            json.dump(jsonable_encoder(texts), json_file, indent=4)
 
-        return None
+        # Add metadata for separate filtering
+        for text in texts:
+            text.metadata["type"] = "Text"
+
+        docs = [*texts]
+
+        logger.info(f"Loading {len(texts)} text-documents into vectorstore")
+
+        return PGVector.from_documents(
+            embedding=self.embedding_model,
+            documents=docs,
+            collection_name=collection_name,
+            connection_string=self.connection_str,
+            pre_delete_collection=True,
+        )
 
     def _load_docs(
         self,
