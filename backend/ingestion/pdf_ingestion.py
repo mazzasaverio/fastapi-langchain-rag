@@ -13,7 +13,7 @@ from langchain.schema import Document
 from dotenv import load_dotenv
 from langchain.vectorstores.pgvector import PGVector
 from langchain.embeddings import CacheBackedEmbeddings
-from backend.logging_config import logger
+from ..logging_config import logger
 from schemas.ingestion_schema import LOADER_DICT
 from fastapi.encoders import jsonable_encoder
 

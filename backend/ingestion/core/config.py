@@ -1,13 +1,13 @@
 from pydantic_settings import BaseSettings
 from typing import List
 from loguru import logger
+import sys
 
 
 class Settings(BaseSettings):
 
     API_VERSION: str = "v1"
     API_V1_STR: str = f"/api/{API_VERSION}"
-    PROJECT_NAME: str
 
     DB_HOST: str
     DB_PORT: str
@@ -16,23 +16,28 @@ class Settings(BaseSettings):
     DB_USER: str
 
     OPENAI_API_KEY: str
-    OPENAI_ORGANIZATION: str
-
-    REDIS_HOST: str
-    REDIS_PORT: str
-
-    TAVILY_API_KEY: str
 
     @property
     def ASYNC_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-    @property
-    def SYNC_DATABASE_URI(self) -> str:
-        return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
     class Config:
         env_file = "../.env"
 
+
+class LogConfig:
+    LOGGING_LEVEL = "DEBUG"
+    LOGGING_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <level>{message}</level>"
+
+    @staticmethod
+    def configure_logging():
+        logger.remove()
+
+        logger.add(
+            sys.stderr, format=LogConfig.LOGGING_FORMAT, level=LogConfig.LOGGING_LEVEL
+        )
+
+
+LogConfig.configure_logging()
 
 settings = Settings()

@@ -20,6 +20,10 @@ langchain = "^0.1.13"
 langchain-openai = "^0.1.1"
 pymupdf = "^1.24.0"
 pgvector = "^0.2.5"
+case-converter = "^1.1.0"
+python-box = "^7.1.1"
+redis = "^5.0.3"
+langchainhub = "^0.1.15"
 
 
 [build-system]

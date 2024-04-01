@@ -1,18 +1,16 @@
-
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.db import  init_db
+from app.api.main import api_router
+from app.core.config import settings
 
+from typing import Dict
 
-@asynccontextmanager
-async def app_lifespan(app: FastAPI):
-    await init_db()
-    yield
+app = FastAPI(
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    docs_url=f"{settings.API_V1_STR}/docs",
+)
 
-
-app = FastAPI(lifespan=app_lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,13 +20,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/metrics")
 def metrics():
     return {"message": "Metrics endpoint"}
 
+
 @app.get("/")
-async def home():
-    return {"data": "Hello"}
+async def root() -> Dict[str, str]:
+    """An example "Hello world" FastAPI route."""
+    return {"message": "FastAPI backend"}
 
 
-
+app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -1,0 +1,17 @@
+CHAT_CONFIG:
+  LLM_MODEL: "gpt-3.5-turbo"
+  MAX_TOKEN_LIMIT: 1000
+  PROMPTS:
+    CONDENSE_QUESTION: >
+      Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+      Chat History:
+      {chat_history}
+      Follow Up Input: {question}
+      Standalone question:
+    ANSWER_QUESTION: >
+      Answer the question based only on the following context:
+      {context}
+
+      Question: {question}
+    DEFAULT_DOCUMENT: "{page_content}"

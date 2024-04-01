@@ -1,67 +1,36 @@
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.config import settings
-import asyncpg
-import psycopg2
 from loguru import logger
+from sqlalchemy.orm import sessionmaker
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI), echo=True)
-
-async def create_extension():
-    conn: asyncpg.Connection = await asyncpg.connect(
-        user=settings.DB_USER,
-        password=settings.DB_PASS,
-        database=settings.DB_NAME,
-        host=settings.DB_HOST,
-    )
-    try:
-        await conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
-        logger.info("pgvector extension created or already exists.")
-    except Exception as e:
-        logger.error(f"Error creating pgvector extension: {e}")
-    finally:
-        await conn.close()
+DB_POOL_SIZE = 83
+WEB_CONCURRENCY = 9
+POOL_SIZE = max(
+    DB_POOL_SIZE // WEB_CONCURRENCY,
+    5,
+)
 
 
-def create_database(database_name, user, password, host, port):
-    try:
-        # Connect to the default database
-        conn = psycopg2.connect(
-            dbname=database_name, user=user, password=password, host=host, port=port
+def _get_local_session() -> sessionmaker:
+    engine = (
+        create_async_engine(
+            url=settings.ASYNC_DATABASE_URI,
+            future=True,
+            pool_size=POOL_SIZE,
+            max_overflow=64,
         )
-        conn.autocommit = True
-        cur = conn.cursor()
-
-        # Check if database exists
-        cur.execute(
-            f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{database_name}'"
-        )
-        exists = cur.fetchone()
-        if not exists:
-
-            cur.execute(f"CREATE DATABASE {database_name}")
-            logger.info(f"Database '{database_name}' created.")
-        else:
-            logger.info(f"Database '{database_name}' already exists.")
-
-        cur.close()
-        conn.close()
-    except Exception as e:
-        logger.error(f"Error creating database: {e}")
-
-async def init_db() -> None:
-    create_database(
-        settings.DB_NAME,
-        settings.DB_USER,
-        settings.DB_PASS,
-        settings.DB_HOST,
-        settings.DB_PORT,
+        if settings.ASYNC_DATABASE_URI is not None
+        else None
     )
-    async with engine.begin() as conn:
-        # Use run_sync to execute the create_all method in an asynchronous context
-        await conn.run_sync(SQLModel.metadata.create_all)
+    return sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
 
-    # Your existing database initialization logic here
-    # For example, creating extensions or setting up initial data
-    await create_extension()
-    logger.info("Database initialized and all tables created if they didn't exist.")
+
+SessionLocal = _get_local_session()
