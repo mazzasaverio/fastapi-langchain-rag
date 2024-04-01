@@ -17,12 +17,15 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str
 
+    FIRST_SUPERUSER: str
+    FIRST_SUPERUSER_PASSWORD: str
+
     @property
     def ASYNC_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     class Config:
-        env_file = "../.env"
+        env_file = ".env"
 
 
 class LogConfig:

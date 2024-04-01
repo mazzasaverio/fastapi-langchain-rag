@@ -1,6 +1,21 @@
 from pydantic_settings import BaseSettings
 from typing import List
 from loguru import logger
+from typing import Annotated, Any, Literal
+import sys
+
+from pydantic import (
+    AnyUrl,
+    BeforeValidator,
+)
+
+
+def parse_cors(v: Any) -> list[str] | str:
+    if isinstance(v, str) and not v.startswith("["):
+        return [i.strip() for i in v.split(",")]
+    elif isinstance(v, list | str):
+        return v
+    raise ValueError(v)
 
 
 class Settings(BaseSettings):
@@ -23,6 +38,13 @@ class Settings(BaseSettings):
 
     TAVILY_API_KEY: str
 
+    FIRST_SUPERUSER: str
+    FIRST_SUPERUSER_PASSWORD: str
+
+    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
+        []
+    )
+
     @property
     def ASYNC_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -34,5 +56,20 @@ class Settings(BaseSettings):
     class Config:
         env_file = "../.env"
 
+
+class LogConfig:
+    LOGGING_LEVEL = "DEBUG"
+    LOGGING_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <level>{message}</level>"
+
+    @staticmethod
+    def configure_logging():
+        logger.remove()
+
+        logger.add(
+            sys.stderr, format=LogConfig.LOGGING_FORMAT, level=LogConfig.LOGGING_LEVEL
+        )
+
+
+LogConfig.configure_logging()
 
 settings = Settings()

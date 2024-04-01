@@ -1,9 +1,21 @@
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine
-from app.core.config import settings
+from backend.app.core.config import settings
 import asyncpg
 import psycopg2
 from loguru import logger
+
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from ingestion.models.user_model import (
+    UserCreate,
+    User,
+)
+
+from backend.ingestion.crud import user_crud
+
 
 engine = create_async_engine(str(settings.ASYNC_DATABASE_URI), echo=True)
 
@@ -51,6 +63,24 @@ def create_database(database_name, user, password, host, port):
         logger.error(f"Error creating database: {e}")
 
 
+# async def init_db() -> None:
+#     create_database(
+#         settings.DB_NAME,
+#         settings.DB_USER,
+#         settings.DB_PASS,
+#         settings.DB_HOST,
+#         settings.DB_PORT,
+#     )
+#     async with engine.begin() as conn:
+#         # Use run_sync to execute the create_all method in an asynchronous context
+#         await conn.run_sync(SQLModel.metadata.create_all)
+
+#     # Your existing database initialization logic here
+#     # For example, creating extensions or setting up initial data
+#     await create_extension()
+#     logger.info("Database initialized and all tables created if they didn't exist.")
+
+
 async def init_db() -> None:
     create_database(
         settings.DB_NAME,
@@ -67,3 +97,32 @@ async def init_db() -> None:
     # For example, creating extensions or setting up initial data
     await create_extension()
     logger.info("Database initialized and all tables created if they didn't exist.")
+
+
+from sqlmodel import Session, create_engine, select
+
+from ingestion.crud import user_crud
+from sqlmodel import Session
+
+engine = create_engine(str(settings.SYNC_DATABASE_URI))
+
+
+# make sure all SQLModel models are imported (app.models) before initializing DB
+# otherwise, SQLModel might fail to initialize relationships properly
+# for more details: https://github.com/tiangolo/full-stack-fastapi-template/issues/28
+
+
+def create_super_user() -> None:
+
+    with Session(engine) as session:
+
+        user = session.exec(
+            select(User).where(User.email == settings.FIRST_SUPERUSER)
+        ).first()
+        if not user:
+            user_in = UserCreate(
+                email=settings.FIRST_SUPERUSER,
+                password=settings.FIRST_SUPERUSER_PASSWORD,
+                is_superuser=True,
+            )
+            user = user_crud.create_user(session=session, user_create=user_in)

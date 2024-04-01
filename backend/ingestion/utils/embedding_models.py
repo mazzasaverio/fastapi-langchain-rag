@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain_openai import OpenAIEmbeddings
-from backend.logging_config import logger
+from ingestion.core.db import logger
 
 
 class CacheBackedEmbeddingsExtended(CacheBackedEmbeddings):

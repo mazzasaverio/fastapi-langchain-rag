@@ -4,7 +4,7 @@ import yaml
 from fastapi import APIRouter
 
 
-from app.core.config import logger
+from backend.app.core.config import logger
 
 
 from operator import itemgetter
@@ -19,9 +19,9 @@ from langchain_core.prompts import format_document
 from langchain_core.runnables import RunnableParallel
 from langchain_community.vectorstores.pgvector import PGVector
 from langchain.memory import ConversationBufferMemory
-from app.core.config import settings
+from backend.app.core.config import settings
 from langchain.prompts.prompt import PromptTemplate
-from pydantic import BaseModel
+from app.schemas.chat_schema import ChatBody
 
 router = APIRouter()
 
@@ -32,12 +32,8 @@ with open(config_path, "r") as config_file:
 chat_config = config.get("CHAT_CONFIG", None)
 
 
-class ChatRequest(BaseModel):
-    message: str
-
-
 @router.post("/chat")
-async def chat_action(request: ChatRequest):
+async def chat_action(request: ChatBody):
 
     embeddings = OpenAIEmbeddings()
 

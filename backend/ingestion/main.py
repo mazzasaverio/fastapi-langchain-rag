@@ -1,9 +1,10 @@
+import asyncio
 import sys
 import os
 
 # Temporary solution.It is used to predict the centralization of logs in the future
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import yaml
 import json
@@ -13,18 +14,22 @@ from langchain.schema import Document
 from dotenv import load_dotenv
 from langchain.vectorstores.pgvector import PGVector
 from langchain.embeddings import CacheBackedEmbeddings
-from ..logging_config import logger
+from ingestion.core.config import logger
 from schemas.ingestion_schema import LOADER_DICT
 from fastapi.encoders import jsonable_encoder
+from sqlmodel import Session
 
-from helpers.embedding_models import get_embedding_model
+from utils.embedding_models import get_embedding_model
 from langchain.text_splitter import TokenTextSplitter
+from ingestion.core.db import engine, init_db
+from ingestion.core.db import create_super_user
 
 load_dotenv()
 
 
 ingestion_config = yaml.load(
-    open(os.path.join(os.path.dirname(__file__), "config.yaml")), Loader=yaml.FullLoader
+    open(os.path.join(os.path.dirname(__file__), "config/ingestion.yml")),
+    Loader=yaml.FullLoader,
 )
 
 path_input_folder = ingestion_config.get("PATH_RAW_PDF", None)
@@ -156,6 +161,11 @@ class PDFExtractionPipeline:
 
 # Example usage
 if __name__ == "__main__":
-    logger.info("Starting PDF extraction pipeline")
-    pipeline = PDFExtractionPipeline()
-    pipeline.run(collection_name)
+
+    # asyncio.run(init_db())
+
+    create_super_user()
+
+    # logger.info("Starting PDF extraction pipeline")
+    # pipeline = PDFExtractionPipeline()
+    # pipeline.run(collection_name)
