@@ -3,6 +3,7 @@ from typing import List
 from loguru import logger
 from typing import Annotated, Any, Literal
 import sys
+import secrets
 
 from pydantic import (
     AnyUrl,
@@ -23,6 +24,8 @@ class Settings(BaseSettings):
     API_VERSION: str = "v1"
     API_V1_STR: str = f"/api/{API_VERSION}"
     PROJECT_NAME: str
+
+    SECRET_KEY: str = secrets.token_urlsafe(32)
 
     DB_HOST: str
     DB_PORT: str
@@ -52,6 +55,10 @@ class Settings(BaseSettings):
     @property
     def SYNC_DATABASE_URI(self) -> str:
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    FIRST_SUPERUSER: str
+    FIRST_SUPERUSER_PASSWORD: str
+    USERS_OPEN_REGISTRATION: bool = False
 
     class Config:
         env_file = "../.env"

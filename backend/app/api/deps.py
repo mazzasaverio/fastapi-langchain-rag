@@ -8,13 +8,17 @@ from pydantic import ValidationError
 from sqlmodel import Session
 
 from app.core import security
-from backend.app.core.config import settings
-from app.core.db import engine
-from app.models import TokenPayload, User
+from app.core.config import settings, logger
+
+from app.models.user_model import TokenPayload, User
+from sqlmodel import Session, create_engine, select
+
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
+
+engine = create_engine(str(settings.SYNC_DATABASE_URI))
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -49,6 +53,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 def get_current_active_superuser(current_user: CurrentUser) -> User:
+    logger.debug(f"################### current_user: {current_user}")
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"

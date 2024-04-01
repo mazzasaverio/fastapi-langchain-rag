@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.main import api_router
-from backend.app.core.config import settings
+from app.core.config import settings
 
 from typing import Dict
 

@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine
-from backend.app.core.config import settings
+from app.core.config import settings
 import asyncpg
 import psycopg2
 from loguru import logger
@@ -14,7 +14,7 @@ from ingestion.models.user_model import (
     User,
 )
 
-from backend.ingestion.crud import user_crud
+from ingestion.crud import user_crud
 
 
 engine = create_async_engine(str(settings.ASYNC_DATABASE_URI), echo=True)

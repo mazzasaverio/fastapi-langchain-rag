@@ -1,13 +1,12 @@
 from app.core.db import SessionLocal
 import os
 import yaml
-from fastapi import APIRouter
 
-
-from backend.app.core.config import logger
+from app.core.config import logger, settings
 
 
 from operator import itemgetter
+from typing import Annotated
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.output_parsers import StrOutputParser
@@ -19,13 +18,15 @@ from langchain_core.prompts import format_document
 from langchain_core.runnables import RunnableParallel
 from langchain_community.vectorstores.pgvector import PGVector
 from langchain.memory import ConversationBufferMemory
-from backend.app.core.config import settings
+
 from langchain.prompts.prompt import PromptTemplate
 from app.schemas.chat_schema import ChatBody
+from fastapi import APIRouter, Depends
+from app.api.deps import get_current_active_superuser
 
 router = APIRouter()
 
-config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config.yml")
+config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config/chat.yml")
 with open(config_path, "r") as config_file:
     config = yaml.load(config_file, Loader=yaml.FullLoader)
 
@@ -33,7 +34,11 @@ chat_config = config.get("CHAT_CONFIG", None)
 
 
 @router.post("/chat")
-async def chat_action(request: ChatBody):
+async def chat_action(
+    request: ChatBody,
+    jwt: Annotated[dict, Depends(get_current_active_superuser)],
+):
+    logger.info(f"User JWT from request: {jwt}")
 
     embeddings = OpenAIEmbeddings()
 
