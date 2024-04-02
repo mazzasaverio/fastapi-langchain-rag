@@ -14,11 +14,11 @@ from app.models.user_model import TokenPayload, User
 from sqlmodel import Session, create_engine, select
 
 
+engine = create_engine(str(settings.SYNC_DATABASE_URI))
+
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
-
-engine = create_engine(str(settings.SYNC_DATABASE_URI))
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -53,9 +53,16 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 def get_current_active_superuser(current_user: CurrentUser) -> User:
-    logger.debug(f"################### current_user: {current_user}")
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+def verify_password_reset_token(token: str) -> str | None:
+    try:
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        return str(decoded_token["sub"])
+    except JWTError:
+        return None

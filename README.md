@@ -1,9 +1,1 @@
-Sviluppo in locale senza docker
-
-install i pacchetti con poetry andando nella cartella backend
-
-runna
-
-uvicorn app.main:app --reload
-
-Runn con docker invece:
+This project serves as a template for building a scalable question answering system using FastAPI, Langchain, and PostgreSQL with the pgvector extension.

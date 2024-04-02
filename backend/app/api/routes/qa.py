@@ -22,7 +22,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
 from app.schemas.chat_schema import ChatBody
 from fastapi import APIRouter, Depends
-from app.api.deps import get_current_active_superuser
+from app.api.deps import get_current_user
+from app.models.user_model import User
 
 router = APIRouter()
 
@@ -35,10 +36,8 @@ chat_config = config.get("CHAT_CONFIG", None)
 
 @router.post("/chat")
 async def chat_action(
-    request: ChatBody,
-    jwt: Annotated[dict, Depends(get_current_active_superuser)],
+    request: ChatBody, current_user: Annotated[User, Depends(get_current_user)]
 ):
-    logger.info(f"User JWT from request: {jwt}")
 
     embeddings = OpenAIEmbeddings()
 

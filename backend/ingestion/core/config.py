@@ -2,6 +2,12 @@ from pydantic_settings import BaseSettings
 from typing import List
 from loguru import logger
 import sys
+from typing_extensions import Self
+import secrets
+import warnings
+from pydantic import (
+    model_validator,
+)
 
 
 class Settings(BaseSettings):
@@ -19,6 +25,8 @@ class Settings(BaseSettings):
 
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
+
+    SECRET_KEY: str = secrets.token_urlsafe(32)
 
     @property
     def ASYNC_DATABASE_URI(self) -> str:

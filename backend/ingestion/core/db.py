@@ -95,8 +95,8 @@ async def init_db() -> None:
 
     # Your existing database initialization logic here
     # For example, creating extensions or setting up initial data
-    await create_extension()
-    logger.info("Database initialized and all tables created if they didn't exist.")
+    # await create_extension()
+    # logger.info("Database initialized and all tables created if they didn't exist.")
 
 
 from sqlmodel import Session, create_engine, select
@@ -104,16 +104,10 @@ from sqlmodel import Session, create_engine, select
 from ingestion.crud import user_crud
 from sqlmodel import Session
 
-engine = create_engine(str(settings.SYNC_DATABASE_URI))
-
-
-# make sure all SQLModel models are imported (app.models) before initializing DB
-# otherwise, SQLModel might fail to initialize relationships properly
-# for more details: https://github.com/tiangolo/full-stack-fastapi-template/issues/28
-
 
 def create_super_user() -> None:
 
+    engine = create_engine(str(settings.SYNC_DATABASE_URI))
     with Session(engine) as session:
 
         user = session.exec(
