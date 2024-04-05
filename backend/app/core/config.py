@@ -39,14 +39,12 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: str
 
-    TAVILY_API_KEY: str
-
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
 
-    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
-        []
-    )
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+
+    BACKEND_CORS_ORIGINS: List[str] = []
 
     @property
     def ASYNC_DATABASE_URI(self) -> str:
@@ -55,10 +53,6 @@ class Settings(BaseSettings):
     @property
     def SYNC_DATABASE_URI(self) -> str:
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
-    FIRST_SUPERUSER: str
-    FIRST_SUPERUSER_PASSWORD: str
-    USERS_OPEN_REGISTRATION: bool = False
 
     class Config:
         env_file = "../.env"

@@ -1,19 +1,31 @@
 from pydantic_settings import BaseSettings
 from typing import List
 from loguru import logger
+from typing import Annotated, Any, Literal
 import sys
-from typing_extensions import Self
 import secrets
-import warnings
+
 from pydantic import (
-    model_validator,
+    AnyUrl,
+    BeforeValidator,
 )
+
+
+def parse_cors(v: Any) -> list[str] | str:
+    if isinstance(v, str) and not v.startswith("["):
+        return [i.strip() for i in v.split(",")]
+    elif isinstance(v, list | str):
+        return v
+    raise ValueError(v)
 
 
 class Settings(BaseSettings):
 
     API_VERSION: str = "v1"
     API_V1_STR: str = f"/api/{API_VERSION}"
+    PROJECT_NAME: str
+
+    SECRET_KEY: str = secrets.token_urlsafe(32)
 
     DB_HOST: str
     DB_PORT: str
@@ -22,18 +34,26 @@ class Settings(BaseSettings):
     DB_USER: str
 
     OPENAI_API_KEY: str
+    OPENAI_ORGANIZATION: str
+
+    REDIS_HOST: str
+    REDIS_PORT: str
 
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
 
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    BACKEND_CORS_ORIGINS: List[str] = []
 
     @property
     def ASYNC_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
+    @property
+    def SYNC_DATABASE_URI(self) -> str:
+        return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
     class Config:
-        env_file = ".env"
+        env_file = "../.env"
 
 
 class LogConfig:

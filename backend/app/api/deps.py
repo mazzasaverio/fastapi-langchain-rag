@@ -12,7 +12,9 @@ from app.core.config import settings, logger
 
 from app.models.user_model import TokenPayload, User
 from sqlmodel import Session, create_engine, select
-
+from fastapi.security import OAuth2PasswordBearer
+from fastapi_nextauth_jwt import NextAuthJWT
+from starlette.requests import Request
 
 engine = create_engine(str(settings.SYNC_DATABASE_URI))
 
@@ -58,11 +60,3 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
-
-
-def verify_password_reset_token(token: str) -> str | None:
-    try:
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        return str(decoded_token["sub"])
-    except JWTError:
-        return None

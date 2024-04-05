@@ -1,4 +1,3 @@
-from app.core.db import SessionLocal
 import os
 import yaml
 
@@ -6,25 +5,26 @@ from app.core.config import logger, settings
 
 
 from operator import itemgetter
-from typing import Annotated
 
-from langchain_community.vectorstores import FAISS
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_core.messages import AIMessage, HumanMessage, get_buffer_string
+from langchain_core.messages import get_buffer_string
 from langchain_core.prompts import format_document
-from langchain_core.runnables import RunnableParallel
+
 from langchain_community.vectorstores.pgvector import PGVector
 from langchain.memory import ConversationBufferMemory
 
 from langchain.prompts.prompt import PromptTemplate
 from app.schemas.chat_schema import ChatBody
 from fastapi import APIRouter, Depends
-from app.api.deps import get_current_user
+from app.api.deps import CurrentUser, get_current_user
 from app.models.user_model import User
 
+from dotenv import load_dotenv
+
+load_dotenv()
 router = APIRouter()
 
 config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config/chat.yml")
@@ -36,7 +36,7 @@ chat_config = config.get("CHAT_CONFIG", None)
 
 @router.post("/chat")
 async def chat_action(
-    request: ChatBody, current_user: Annotated[User, Depends(get_current_user)]
+    request: ChatBody, current_user: User = Depends(get_current_user)
 ):
 
     embeddings = OpenAIEmbeddings()

@@ -12,6 +12,7 @@ from typing import Any, List
 from langchain.schema import Document
 
 from dotenv import load_dotenv
+
 from langchain.vectorstores.pgvector import PGVector
 from langchain.embeddings import CacheBackedEmbeddings
 from ingestion.core.config import logger
