@@ -36,9 +36,6 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     OPENAI_ORGANIZATION: str
 
-    FIRST_SUPERUSER: str
-    FIRST_SUPERUSER_PASSWORD: str
-
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     BACKEND_CORS_ORIGINS: List[str] = '["*"]'
