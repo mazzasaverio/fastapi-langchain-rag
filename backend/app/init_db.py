@@ -16,11 +16,6 @@ from sqlalchemy.future import select
 from sqlmodel import SQLModel, Session, create_engine, select
 
 
-load_dotenv()
-
-FIRST_SUPERUSER = os.getenv("FIRST_SUPERUSER")
-FIRST_SUPERUSER_PASSWORD = os.getenv("FIRST_SUPERUSER_PASSWORD")
-
 engine = create_async_engine(str(settings.ASYNC_DATABASE_URI), echo=True)
 
 
@@ -81,6 +76,10 @@ async def init_db() -> None:
 
 
 def create_super_user() -> None:
+    load_dotenv()
+
+    FIRST_SUPERUSER = os.getenv("FIRST_SUPERUSER")
+    FIRST_SUPERUSER_PASSWORD = os.getenv("FIRST_SUPERUSER_PASSWORD")
 
     engine = create_engine(str(settings.SYNC_DATABASE_URI))
     with Session(engine) as session:
