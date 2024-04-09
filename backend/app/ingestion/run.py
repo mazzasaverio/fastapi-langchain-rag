@@ -2,8 +2,6 @@ import asyncio
 import sys
 import os
 
-# Temporary solution.It is used to predict the centralization of logs in the future
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import yaml
@@ -15,21 +13,24 @@ from dotenv import load_dotenv
 
 from langchain.vectorstores.pgvector import PGVector
 from langchain.embeddings import CacheBackedEmbeddings
-from ingestion.core.config import logger
-from schemas.ingestion_schema import LOADER_DICT
+from app.core.config import logger
+from app.schemas.ingestion_schema import LOADER_DICT
 from fastapi.encoders import jsonable_encoder
 from sqlmodel import Session
 
 from utils.embedding_models import get_embedding_model
 from langchain.text_splitter import TokenTextSplitter
-from ingestion.core.db import engine, init_db
-from ingestion.core.db import create_super_user
+from backend.app.init_db import engine, init_db
+from backend.app.init_db import create_super_user
 
 load_dotenv()
 
+ingestion_config_path = os.path.join(
+    os.path.dirname(__file__), "..", "config/ingestion.yml"
+)
 
 ingestion_config = yaml.load(
-    open(os.path.join(os.path.dirname(__file__), "config/ingestion.yml")),
+    open(ingestion_config_path, "r"),
     Loader=yaml.FullLoader,
 )
 
@@ -160,7 +161,6 @@ class PDFExtractionPipeline:
         return documents
 
 
-# Example usage
 if __name__ == "__main__":
 
     asyncio.run(init_db())

@@ -23,9 +23,9 @@ class Settings(BaseSettings):
 
     API_VERSION: str = "v1"
     API_V1_STR: str = f"/api/{API_VERSION}"
-    PROJECT_NAME: str
+    PROJECT_NAME: str = "fastapi-langchain-rag"
 
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY_ACCESS_API: str
 
     DB_HOST: str
     DB_PORT: str
@@ -36,15 +36,12 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     OPENAI_ORGANIZATION: str
 
-    REDIS_HOST: str
-    REDIS_PORT: str
-
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
-    BACKEND_CORS_ORIGINS: List[str] = []
+    BACKEND_CORS_ORIGINS: List[str] = '["*"]'
 
     @property
     def ASYNC_DATABASE_URI(self) -> str:

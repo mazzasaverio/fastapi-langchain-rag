@@ -1,21 +1,25 @@
-from sqlmodel import SQLModel
-from sqlalchemy.ext.asyncio import create_async_engine
-from app.core.config import settings
+import asyncio
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import asyncpg
-import psycopg2
+from app.core.config import settings
+from app.crud import user_crud
+from app.models.user_model import User, UserCreate
+from dotenv import load_dotenv
 from loguru import logger
-
-
-from sqlalchemy.ext.asyncio import AsyncSession
+import psycopg2
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.future import select
+from sqlmodel import SQLModel, Session, create_engine, select
 
-from ingestion.models.user_model import (
-    UserCreate,
-    User,
-)
 
-from ingestion.crud import user_crud
+load_dotenv()
 
+FIRST_SUPERUSER = os.getenv("FIRST_SUPERUSER")
+FIRST_SUPERUSER_PASSWORD = os.getenv("FIRST_SUPERUSER_PASSWORD")
 
 engine = create_async_engine(str(settings.ASYNC_DATABASE_URI), echo=True)
 
@@ -63,24 +67,6 @@ def create_database(database_name, user, password, host, port):
         logger.error(f"Error creating database: {e}")
 
 
-# async def init_db() -> None:
-#     create_database(
-#         settings.DB_NAME,
-#         settings.DB_USER,
-#         settings.DB_PASS,
-#         settings.DB_HOST,
-#         settings.DB_PORT,
-#     )
-#     async with engine.begin() as conn:
-#         # Use run_sync to execute the create_all method in an asynchronous context
-#         await conn.run_sync(SQLModel.metadata.create_all)
-
-#     # Your existing database initialization logic here
-#     # For example, creating extensions or setting up initial data
-#     await create_extension()
-#     logger.info("Database initialized and all tables created if they didn't exist.")
-
-
 async def init_db() -> None:
     create_database(
         settings.DB_NAME,
@@ -93,30 +79,24 @@ async def init_db() -> None:
         # Use run_sync to execute the create_all method in an asynchronous context
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    # Your existing database initialization logic here
-    # For example, creating extensions or setting up initial data
-    # await create_extension()
-    # logger.info("Database initialized and all tables created if they didn't exist.")
-
-
-from sqlmodel import Session, create_engine, select
-
-from ingestion.crud import user_crud
-from sqlmodel import Session
-
 
 def create_super_user() -> None:
 
     engine = create_engine(str(settings.SYNC_DATABASE_URI))
     with Session(engine) as session:
 
-        user = session.exec(
-            select(User).where(User.email == settings.FIRST_SUPERUSER)
-        ).first()
+        user = session.exec(select(User).where(User.email == FIRST_SUPERUSER)).first()
         if not user:
             user_in = UserCreate(
-                email=settings.FIRST_SUPERUSER,
-                password=settings.FIRST_SUPERUSER_PASSWORD,
+                email=FIRST_SUPERUSER,
+                password=FIRST_SUPERUSER_PASSWORD,
                 is_superuser=True,
             )
             user = user_crud.create_user(session=session, user_create=user_in)
+
+
+if __name__ == "__main__":
+
+    asyncio.run(init_db())
+
+    create_super_user()

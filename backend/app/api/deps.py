@@ -35,7 +35,7 @@ TokenDep = Annotated[str, Depends(reusable_oauth2)]
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
         payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+            token, settings.SECRET_KEY_ACCESS_API, algorithms=[security.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
     except (JWTError, ValidationError):
