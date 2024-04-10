@@ -1,0 +1,3 @@
+[submodule "terraform-gcp-cloud-run"]
+	path = terraform-gcp-cloud-run
+	url = https://github.com/mazzasaverio/terraform-gcp-cloud-run.git
