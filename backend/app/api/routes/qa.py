@@ -33,10 +33,14 @@ with open(config_path, "r") as config_file:
 
 chat_config = config.get("CHAT_CONFIG", None)
 
+logger.info(f"Chat config: {chat_config}")
+
 
 @router.post("/chat")
 async def chat_action(
-    request: ChatBody, current_user: User = Depends(get_current_user)
+    request: ChatBody,
+    current_user: User = Depends(get_current_user),
+    # request: ChatBody,
 ):
 
     embeddings = OpenAIEmbeddings()
@@ -57,8 +61,12 @@ async def chat_action(
     # Your existing logic here, replace hardcoded prompt templates with loaded ones
     # Example of using loaded prompts:
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(_template_condense)
+
     ANSWER_PROMPT = ChatPromptTemplate.from_template(_template_answer)
     DEFAULT_DOCUMENT_PROMPT = PromptTemplate.from_template(_template_default_document)
+    logger.info(f"CONDENSE_QUESTION_PROMPT: {CONDENSE_QUESTION_PROMPT}")
+    logger.info(f"ANSWER_PROMPT: {ANSWER_PROMPT}")
+    logger.info(f"DEFAULT_DOCUMENT_PROMPT: {DEFAULT_DOCUMENT_PROMPT}")
 
     def _combine_documents(
         docs, document_prompt=DEFAULT_DOCUMENT_PROMPT, document_separator="\n\n"
@@ -98,7 +106,9 @@ async def chat_action(
         "question": itemgetter("question"),
     }
 
-    logger.info(f"Final inputs: {final_inputs}")
+    test = final_inputs["context"]
+
+    logger.info(f"Final inputs: {test}")
     # And finally, we do the part that returns the answers
     answer = {
         "answer": final_inputs | ANSWER_PROMPT | ChatOpenAI(),
@@ -108,6 +118,15 @@ async def chat_action(
     final_chain = loaded_memory | standalone_question | retrieved_documents | answer
 
     inputs = {"question": request.message}
+    logger.info(f"Inputs: {inputs}")
     result = final_chain.invoke(inputs)
 
-    return result["answer"].content
+    test2 = result["answer"]
+
+    logger.info(f"Result: {test2}")
+
+    test3 = result["answer"].content
+
+    logger.info(f"Result: {test3}")
+
+    return {"data": result["answer"].content}
