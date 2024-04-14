@@ -18,6 +18,9 @@ from app.utils.general_helpers import find_project_root
 from utils.embedding_models import get_embedding_model
 from langchain.text_splitter import TokenTextSplitter
 from app.init_db import engine
+from langchain_community.document_loaders import UnstructuredFileLoader
+from unstructured.cleaners.core import clean_extra_whitespace
+
 
 load_dotenv()
 
@@ -94,19 +97,21 @@ class PDFExtractionPipeline:
         """Load documents into vectorstore."""
         text_documents = self._load_docs(folder_path)
 
+        logger.info(f"Loaded {len(text_documents)} documents")
+
         text_splitter = TokenTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_size=2200,
+            chunk_overlap=100,
         )
 
         texts = text_splitter.split_documents(text_documents)
 
-        json_path = os.path.join(
-            path_extraction_folder, f"{collection_name}_split_texts.json"
-        )
-        with open(json_path, "w") as json_file:
-            # Use jsonable_encoder to ensure the data is serializable
-            json.dump(jsonable_encoder(texts), json_file, indent=4)
+        # json_path = os.path.join(
+        #     path_extraction_folder, f"{collection_name}_split_texts.json"
+        # )
+        # with open(json_path, "w") as json_file:
+        #     # Use jsonable_encoder to ensure the data is serializable
+        #     json.dump(jsonable_encoder(texts), json_file, indent=4)
 
         # Add metadata for separate filtering
         for text in texts:
@@ -137,13 +142,19 @@ class PDFExtractionPipeline:
         documents = []
         for file_name in os.listdir(dir_path):
             file_extension = os.path.splitext(file_name)[1].lower()
-            # Load PDF files
+
             if file_extension == ".pdf":
-                logger.info(f"Loading {file_name} into vectorstore")
+
                 file_path = f"{dir_path}/{file_name}"
                 logger.debug(f"Loading {file_name} from {file_path}")
                 try:
-                    loader: Any = self.pdf_loader(file_path)  # type: ignore
+                    # loader: Any = self.pdf_loader(file_path)  # type: ignore
+                    loader = UnstructuredFileLoader(
+                        file_path=file_path,
+                        strategy="hi_res",
+                        post_processors=[clean_extra_whitespace],
+                    )
+
                     file_docs = loader.load()
                     documents.extend(file_docs)
 
